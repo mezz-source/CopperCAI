@@ -1,16 +1,17 @@
 local State = {}
 
-export type State = "Idle" | "Attacking" | "Defending" | "Moving" | "Running" | "Stunned"
+export type State = "Idle" | "Attacking" | "Defending" | "Moving" | "Running" | "Stunned" | "Combatting"
 
 export type StateTable = {[State]: boolean}
 
-local Character = script.Parent.Parent
+local Character = script.Parent.Parent.Parent
 local Humanoid = Character:WaitForChild("Humanoid")
 
 local STATE_TABLE: StateTable = {
     Idle = true,
     Attacking = false,
     Defending = false,
+    Combatting = false,
     Moving = false,
     Running = false,
     Stunned = false
@@ -26,6 +27,12 @@ end
 
 local function setState(stateName: State, value: boolean): ()
     STATE_TABLE[stateName] = value
+end
+
+function State.set(newState: State)
+    for stateName, _ in pairs(STATE_TABLE) do
+        setState(stateName, stateName == newState)
+    end
 end
 
 function State.isIdle(): boolean
@@ -44,6 +51,10 @@ function State.isMoving(): boolean
     return isState("Moving")
 end
 
+function State.isCombatting(): boolean
+    return isState("Combatting")
+end
+
 function State.isRunning(): boolean
     return isState("Running")
 end
@@ -54,6 +65,10 @@ end
 
 function State.isAlive(): boolean
     return isAlive()
+end
+
+function State.canAct(): boolean
+    return isAlive() and not isState("Stunned")
 end
 
 function State.update()
